@@ -29,3 +29,7 @@ func main() {
 		return
 }
 ```
+
+## Related
+
+[lock-smith](https://github.com/ryandotsmith/lock-smith)
