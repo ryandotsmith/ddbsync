@@ -23,18 +23,7 @@ type Mutex struct {
 // Before writing the lock, we will clear any locks that are expired.
 // Calling this function will block until a lock can be acquired.
 func (m *Mutex) Lock() {
-	// Do everyone a favor and clean up expired locks.
-	item, err := db.get(m.Name)
-	if err != nil {
-		fmt.Printf("error=%v", err)
-		return
-	}
-	if item != nil {
-		if item.Created < (time.Now().Unix() - m.Ttl) {
-			m.Unlock()
-		}
-	}
-	// Now, lets see if we can get a lock.
+	m.PruneExpired()
 	for {
 		err := db.put(m.Name, time.Now().Unix())
 		if err == nil {
@@ -53,6 +42,20 @@ func (m *Mutex) Unlock() {
 			break
 		}
 		time.Sleep(time.Second)
+	}
+	return
+}
+
+func (m *Mutex) PruneExpired() {
+	item, err := db.get(m.Name)
+	if err != nil {
+		fmt.Printf("error=%v", err)
+		return
+	}
+	if item != nil {
+		if item.Created < (time.Now().Unix() - m.Ttl) {
+			m.Unlock()
+		}
 	}
 	return
 }
