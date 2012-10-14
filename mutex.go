@@ -52,7 +52,6 @@ func (m *Mutex) PruneExpired() {
 		fmt.Printf("error=%v", err)
 		return
 	}
-	fmt.Errorf("prune item=%v\n", item)
 	if item != nil {
 		if item.Created < (time.Now().Unix() - m.Ttl) {
 			m.Unlock()
