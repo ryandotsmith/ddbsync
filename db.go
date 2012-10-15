@@ -3,7 +3,6 @@ package ddbsync
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/bmizerany/aws4"
 	"io/ioutil"
@@ -12,17 +11,13 @@ import (
 	"time"
 )
 
-var (
-	ErrNotFound = errors.New("Not Found")
-)
-
 const (
-	OpPutItem    = "DynamoDB_20111205.PutItem"
-	OpGetItem    = "DynamoDB_20111205.GetItem"
-	OpDeleteItem = "DynamoDB_20111205.DeleteItem"
+	opPutItem    = "DynamoDB_20111205.PutItem"
+	opGetItem    = "DynamoDB_20111205.GetItem"
+	opDeleteItem = "DynamoDB_20111205.DeleteItem"
 )
 
-type Item struct {
+type item struct {
 	Name    string
 	Created int64
 }
@@ -31,21 +26,12 @@ type responseError struct {
 	resp *http.Response
 }
 
-type B struct {
-	B bool
-}
-
-type S struct {
+type s struct {
 	S string
 }
 
-type N struct {
+type n struct {
 	N int64 `json:",string"`
-}
-
-type U struct {
-	Action string
-	Value  interface{}
 }
 
 type database struct {
@@ -68,8 +54,8 @@ func (db *database) put(name string, created int64) error {
 	type T struct {
 		TableName string
 		Item      struct {
-			Name    S
-			Created N
+			Name    s
+			Created n
 		}
 		Expected struct {
 			Name struct {
@@ -84,7 +70,7 @@ func (db *database) put(name string, created int64) error {
 	t.Item.Created.N = created
 	t.Expected.Name.Exists = false
 
-	resp, err := db.do(OpPutItem, t)
+	resp, err := db.do(opPutItem, t)
 	if err != nil {
 		return err
 	}
@@ -101,12 +87,12 @@ func (db *database) put(name string, created int64) error {
 	return nil
 }
 
-func (db *database) get(name string) (*Item, error) {
+func (db *database) get(name string) (*item, error) {
 	type T struct {
 		TableName      string
 		ConsistentRead bool
 		Key            struct {
-			HashKeyElement S
+			HashKeyElement s
 		}
 		AttributesToGet []string
 	}
@@ -117,7 +103,7 @@ func (db *database) get(name string) (*Item, error) {
 	t.Key.HashKeyElement.S = name
 	t.AttributesToGet = []string{"Name", "Created"}
 
-	resp, err := db.do(OpGetItem, t)
+	resp, err := db.do(opGetItem, t)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +119,8 @@ func (db *database) get(name string) (*Item, error) {
 
 	type R struct {
 		Item struct {
-			Name    S
-			Created N
+			Name    s
+			Created n
 		}
 	}
 	r := new(R)
@@ -145,14 +131,14 @@ func (db *database) get(name string) (*Item, error) {
 	if r.Item.Name.S == "" {
 		return nil, nil
 	}
-	return &Item{r.Item.Name.S, r.Item.Created.N}, nil
+	return &item{r.Item.Name.S, r.Item.Created.N}, nil
 }
 
 func (db *database) delete(name string) error {
 	type T struct {
 		TableName string
 		Key       struct {
-			HashKeyElement S
+			HashKeyElement s
 		}
 	}
 
@@ -160,7 +146,7 @@ func (db *database) delete(name string) error {
 	t.TableName = "Locks"
 	t.Key.HashKeyElement.S = name
 
-	resp, err := db.do(OpDeleteItem, t)
+	resp, err := db.do(opDeleteItem, t)
 	if err != nil {
 		return err
 	}
