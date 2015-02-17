@@ -56,7 +56,7 @@ func (db *database) put(name string, created int64) error {
 		return err
 	}
 
-	log.Println("PutItem finished. name = %s, created = %d, pio = %s", name, created, pio)
+	log.Printf("PutItem finished. name = %s, created = %d, pio = %s", name, created, pio)
 
 	return nil
 }
