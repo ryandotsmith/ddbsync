@@ -52,6 +52,7 @@ func (db *database) put(name string, created int64) error {
 	}
 	pio, err := db.client.PutItem(pit)
 	if err != nil {
+		log.Printf("put. Error = %s", err.Error())
 		return err
 	}
 
