@@ -1,18 +1,12 @@
 package ddbsync
 
 import (
-	//"bytes"
-	//"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
-	//"io/ioutil"
-	//"net/http"
-	//"os"
-	"strconv"
-	//"time"
-	"errors"
 	"log"
+	"strconv"
 )
 
 type item struct {
@@ -24,11 +18,17 @@ type database struct {
 	client *dynamodb.DynamoDB
 }
 
-var db = &database{
+var db DBer = &database{
 	client: dynamodb.New(nil),
 }
 
-func (db *database) put(name string, created int64) error {
+type DBer interface {
+	Put(string, int64) error
+	Get(string) (*item, error)
+	Delete(string) error
+}
+
+func (db *database) Put(name string, created int64) error {
 	log.Printf("put called. name = %s, created = %d", name, created)
 	i := map[string]dynamodb.AttributeValue{
 		"Name": dynamodb.AttributeValue{
@@ -61,7 +61,7 @@ func (db *database) put(name string, created int64) error {
 	return nil
 }
 
-func (db *database) get(name string) (*item, error) {
+func (db *database) Get(name string) (*item, error) {
 	log.Printf("get called. name = %s", name)
 	kc := map[string]dynamodb.Condition{
 		"Name": dynamodb.Condition{
@@ -104,55 +104,9 @@ func (db *database) get(name string) (*item, error) {
 	i := &item{n, c}
 	log.Println("get. name = %s, i = %s", name, i)
 	return i, nil
-
-	/*type T struct {
-		TableName      string
-		ConsistentRead bool
-		Key            struct {
-			HashKeyElement s
-		}
-		AttributesToGet []string
-	}
-
-	t := new(T)
-	t.TableName = "Locks"
-	t.ConsistentRead = true
-	t.Key.HashKeyElement.S = name
-	t.AttributesToGet = []string{"Name", "Created"}
-
-	resp, err := db.do(opGetItem, t)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		return nil, fmt.Errorf("get error: %d %q", resp.StatusCode, string(b))
-	}
-
-	type R struct {
-		Item struct {
-			Name    s
-			Created n
-		}
-	}
-	r := new(R)
-	if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
-		return nil, err
-	}
-
-	if r.Item.Name.S == "" {
-		return nil, nil
-	}
-	return &item{r.Item.Name.S, r.Item.Created.N}, nil
-	*/
 }
 
-func (db *database) delete(name string) error {
+func (db *database) Delete(name string) error {
 	log.Printf("delete called. name = %s", name)
 	k := map[string]dynamodb.AttributeValue{
 		"Name": dynamodb.AttributeValue{
