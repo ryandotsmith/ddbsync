@@ -1,0 +1,41 @@
+{
+	"ImportPath": "github.com/ryandotsmith/ddbsync",
+	"GoVersion": "go1.4.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/awslabs/aws-sdk-go/aws",
+			"Rev": "ede5e38add047af438c009f6b051a2a3b1e7e715"
+		},
+		{
+			"ImportPath": "github.com/awslabs/aws-sdk-go/service/dynamodb",
+			"Rev": "ede5e38add047af438c009f6b051a2a3b1e7e715"
+		},
+		{
+			"ImportPath": "github.com/stretchr/objx",
+			"Rev": "cbeaeb16a013161a98496fad62933b1d21786672"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/mock",
+			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/require",
+			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/suite",
+			"Rev": "33a31e5dbed8302d5ab7e6d12b416e95c2c4ebc0"
+		},
+		{
+			"ImportPath": "github.com/vaughan0/go-ini",
+			"Rev": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
+		}
+	]
+}
