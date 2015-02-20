@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
-	"github.com/ryandotsmith/ddbsync/models"
+	"github.com/zshenker/ddbsync/models"
 	"strconv"
 )
 

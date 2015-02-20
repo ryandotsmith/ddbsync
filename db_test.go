@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
-	"github.com/ryandotsmith/ddbsync/mocks"
-	"github.com/ryandotsmith/ddbsync/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"github.com/zshenker/ddbsync/mocks"
+	"github.com/zshenker/ddbsync/models"
 	"testing"
 )
 
