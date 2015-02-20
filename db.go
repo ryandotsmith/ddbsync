@@ -5,17 +5,12 @@ import (
 	"fmt"
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
-	"log"
+	"github.com/ryandotsmith/ddbsync/models"
 	"strconv"
 )
 
-type item struct {
-	Name    string
-	Created int64
-}
-
 type database struct {
-	client *dynamodb.DynamoDB
+	client AWSDynamoer
 }
 
 var db DBer = &database{
@@ -24,12 +19,17 @@ var db DBer = &database{
 
 type DBer interface {
 	Put(string, int64) error
-	Get(string) (*item, error)
+	Get(string) (*models.Item, error)
 	Delete(string) error
 }
 
+type AWSDynamoer interface {
+	PutItem(*dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
+	Query(*dynamodb.QueryInput) (*dynamodb.QueryOutput, error)
+	DeleteItem(*dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
+}
+
 func (db *database) Put(name string, created int64) error {
-	log.Printf("put called. name = %s, created = %d", name, created)
 	i := map[string]dynamodb.AttributeValue{
 		"Name": dynamodb.AttributeValue{
 			S: aws.String(name),
@@ -50,19 +50,15 @@ func (db *database) Put(name string, created int64) error {
 		Item:      i,
 		Expected:  e,
 	}
-	pio, err := db.client.PutItem(pit)
+	_, err := db.client.PutItem(pit)
 	if err != nil {
-		log.Printf("put. Error = %s", err.Error())
 		return err
 	}
-
-	log.Printf("PutItem finished. name = %s, created = %d, pio = %s", name, created, pio)
 
 	return nil
 }
 
-func (db *database) Get(name string) (*item, error) {
-	log.Printf("get called. name = %s", name)
+func (db *database) Get(name string) (*models.Item, error) {
 	kc := map[string]dynamodb.Condition{
 		"Name": dynamodb.Condition{
 			AttributeValueList: []dynamodb.AttributeValue{
@@ -86,28 +82,28 @@ func (db *database) Get(name string) (*item, error) {
 		return nil, err
 	}
 
-	//Make sure that no or 1 item is returned from DynamoDB
+	// Make sure that no or 1 item is returned from DynamoDB
 	if qo.Count != nil {
 		if *qo.Count == 0 {
-			eStr := fmt.Sprintf("No item for Name, %s", name)
-			return nil, errors.New(eStr)
+			return nil, errors.New(fmt.Sprintf("No item for Name, %s", name))
 		} else if *qo.Count > 1 {
-			eStr := fmt.Sprintf("Expected only 1 item returned from Dynamo, got %d", *qo.Count)
-			return nil, errors.New(eStr)
+			return nil, errors.New(fmt.Sprintf("Expected only 1 item returned from Dynamo, got %d", *qo.Count))
 		}
 	} else {
 		return nil, errors.New("Count not returned")
 	}
 
+	if len(qo.Items) < 1 || qo.Items[0] == nil {
+		return nil, errors.New("No item returned, count is invalid.")
+	}
+
 	n := *qo.Items[0]["Name"].S
 	c, _ := strconv.ParseInt(*qo.Items[0]["Created"].N, 10, 0)
-	i := &item{n, c}
-	log.Println("get. name = %s, i = %s", name, i)
+	i := &models.Item{n, c}
 	return i, nil
 }
 
 func (db *database) Delete(name string) error {
-	log.Printf("delete called. name = %s", name)
 	k := map[string]dynamodb.AttributeValue{
 		"Name": dynamodb.AttributeValue{
 			S: aws.String(name),
@@ -117,12 +113,10 @@ func (db *database) Delete(name string) error {
 		TableName: aws.String("Locks"),
 		Key:       k,
 	}
-	dio, err := db.client.DeleteItem(dii)
+	_, err := db.client.DeleteItem(dii)
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Deleted item. name = %s, dio = %s", name, dio)
 
 	return nil
 }

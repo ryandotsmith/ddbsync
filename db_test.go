@@ -1,16 +1,25 @@
 package ddbsync
 
 import (
-	//"github.com/stretchr/testify/assert"
-	//"github.com/ryandotsmith/ddbsync/mocks"
-	//"github.com/stretchr/testify/mock"
+	"errors"
+	"fmt"
+	"github.com/awslabs/aws-sdk-go/aws"
+	"github.com/awslabs/aws-sdk-go/service/dynamodb"
+	"github.com/ryandotsmith/ddbsync/mocks"
+	"github.com/ryandotsmith/ddbsync/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
+const DB_VALID_NAME string = "db-name"
+const DB_VALID_CREATED int64 = 1424385592
+const DB_VALID_CREATED_STRING string = "1424385592"
+
 type DBSuite struct {
 	suite.Suite
-	//mock *mocks.DBer
+	mock *mocks.AWSDynamoer
 }
 
 func TestDBSuite(t *testing.T) {
@@ -22,18 +31,131 @@ func (s *DBSuite) SetupSuite() {
 }
 
 func (s *DBSuite) SetupTest() {
-	//s.mock = new(mocks.DBer)
-	//db = s.mock
+	s.mock = new(mocks.AWSDynamoer)
+	db.(*database).client = s.mock
+}
+
+func (s *DBSuite) TearDownTest() {
+	db.(*database).client = dynamodb.New(nil)
 }
 
 func (s *DBSuite) TestPut() {
+	s.mock.On("PutItem", mock.AnythingOfType("*dynamodb.PutItemInput")).Return(&dynamodb.PutItemOutput{}, nil)
 
+	err := db.Put(DB_VALID_NAME, DB_VALID_CREATED)
+
+	assert.Nil(s.T(), err)
+}
+
+func (s *DBSuite) TestPutError() {
+	s.mock.On("PutItem", mock.AnythingOfType("*dynamodb.PutItemInput")).Return((*dynamodb.PutItemOutput)(nil), errors.New("PutItem Error"))
+
+	err := db.Put(DB_VALID_NAME, DB_VALID_CREATED)
+
+	assert.NotNil(s.T(), err)
 }
 
 func (s *DBSuite) TestGet() {
+	qo := &dynamodb.QueryOutput{
+		Count: aws.Integer(1),
+		Items: []map[string]dynamodb.AttributeValue{
+			map[string]dynamodb.AttributeValue{
+				"Name": dynamodb.AttributeValue{
+					S: aws.String(DB_VALID_NAME),
+				},
+				"Created": dynamodb.AttributeValue{
+					N: aws.String(DB_VALID_CREATED_STRING),
+				},
+			},
+		},
+	}
 
+	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
+
+	i, err := db.Get(DB_VALID_NAME)
+
+	assert.NotNil(s.T(), i)
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), &models.Item{Name: DB_VALID_NAME, Created: DB_VALID_CREATED}, i)
+}
+
+func (s *DBSuite) TestGetErrorNoQueryOutput() {
+	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return((*dynamodb.QueryOutput)(nil), errors.New("Query Error"))
+
+	i, err := db.Get(DB_VALID_NAME)
+
+	assert.Nil(s.T(), i)
+	assert.NotNil(s.T(), err)
+}
+
+func (s *DBSuite) TestGetErrorNilCount() {
+	qo := &dynamodb.QueryOutput{
+		Count: nil,
+	}
+
+	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
+
+	i, err := db.Get(DB_VALID_NAME)
+
+	assert.Nil(s.T(), i)
+	assert.NotNil(s.T(), err)
+	assert.Equal(s.T(), errors.New("Count not returned"), err)
+}
+
+func (s *DBSuite) TestGetErrorZeroCount() {
+	qo := &dynamodb.QueryOutput{
+		Count: aws.Integer(0),
+	}
+
+	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
+
+	i, err := db.Get(DB_VALID_NAME)
+
+	assert.Nil(s.T(), i)
+	assert.NotNil(s.T(), err)
+	assert.Equal(s.T(), errors.New(fmt.Sprintf("No item for Name, %s", DB_VALID_NAME)), err)
+}
+
+func (s *DBSuite) TestGetErrorCountTooHigh() {
+	qo := &dynamodb.QueryOutput{
+		Count: aws.Integer(2),
+	}
+
+	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
+
+	i, err := db.Get(DB_VALID_NAME)
+
+	assert.Nil(s.T(), i)
+	assert.NotNil(s.T(), err)
+	assert.Equal(s.T(), errors.New("Expected only 1 item returned from Dynamo, got 2"), err)
+}
+
+func (s *DBSuite) TestGetErrorCountSetNoItems() {
+	qo := &dynamodb.QueryOutput{
+		Count: aws.Integer(1),
+	}
+
+	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
+
+	i, err := db.Get(DB_VALID_NAME)
+
+	assert.Nil(s.T(), i)
+	assert.NotNil(s.T(), err)
+	assert.Equal(s.T(), errors.New("No item returned, count is invalid."), err)
 }
 
 func (s *DBSuite) TestDelete() {
+	s.mock.On("DeleteItem", mock.AnythingOfType("*dynamodb.DeleteItemInput")).Return(&dynamodb.DeleteItemOutput{}, nil)
 
+	err := db.Delete(DB_VALID_NAME)
+
+	assert.Nil(s.T(), err)
+}
+
+func (s *DBSuite) TestDeleteError() {
+	s.mock.On("DeleteItem", mock.AnythingOfType("*dynamodb.DeleteItemInput")).Return((*dynamodb.DeleteItemOutput)(nil), errors.New("Delete Error"))
+
+	err := db.Delete(DB_VALID_NAME)
+
+	assert.NotNil(s.T(), err)
 }
