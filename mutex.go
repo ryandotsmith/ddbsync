@@ -9,6 +9,7 @@ package ddbsync
 
 import (
 	"log"
+	"sync"
 	"time"
 )
 
@@ -18,6 +19,8 @@ type Mutex struct {
 	Name string
 	TTL  int64
 }
+
+var _ sync.Locker = (*Mutex)(nil) // Forces compile time checking of the interface
 
 // Lock will write an item in a DynamoDB table if the item does not exist.
 // Before writing the lock, we will clear any locks that are expired.
