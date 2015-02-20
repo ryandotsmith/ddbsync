@@ -1,10 +1,11 @@
 # ddbsync
 
+[![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/zshenker/ddbsync)
+[![Build Status](https://img.shields.io/travis/zshenker/ddbsync.svg)](https://travis-ci.org/zshenker/ddbsync)
+
 DynamoDB/sync
 
 This package is designed to emulate the behaviour of `pkg/sync` on top of Amazon's DynamoDB. If you need a distributed locking mechanism, consider using this package and DynamoDB before standing up paxos or Zookeeper.
-
-[GoPkgDoc](http://go.pkgdoc.org/github.com/zshenker/ddbsync)
 
 ## Usage
 
