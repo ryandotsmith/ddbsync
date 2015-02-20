@@ -1,183 +1,126 @@
 package ddbsync
 
 import (
-	"bytes"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/bmizerany/aws4"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"time"
+	"github.com/awslabs/aws-sdk-go/aws"
+	"github.com/awslabs/aws-sdk-go/service/dynamodb"
+	"github.com/zshenker/ddbsync/models"
+	"strconv"
 )
-
-const (
-	opPutItem    = "DynamoDB_20111205.PutItem"
-	opGetItem    = "DynamoDB_20111205.GetItem"
-	opDeleteItem = "DynamoDB_20111205.DeleteItem"
-)
-
-type item struct {
-	Name    string
-	Created int64
-}
-
-type responseError struct {
-	resp *http.Response
-}
-
-type s struct {
-	S string
-}
-
-type n struct {
-	N int64 `json:",string"`
-}
 
 type database struct {
-	keys *aws4.Keys
-	s    *aws4.Service
+	client AWSDynamoer
 }
 
-var db = &database{
-	keys: &aws4.Keys{
-		AccessKey: os.Getenv("AWS_ACCESS_KEY"),
-		SecretKey: os.Getenv("AWS_SECRET_KEY"),
-	},
-	s: &aws4.Service{
-		Name:   "dynamodb",
-		Region: "us-east-1",
-	},
+var db DBer = &database{
+	client: dynamodb.New(nil),
 }
 
-func (db *database) put(name string, created int64) error {
-	type T struct {
-		TableName string
-		Item      struct {
-			Name    s
-			Created n
-		}
-		Expected struct {
-			Name struct {
-				Exists bool
-			}
-		}
+var _ DBer = (*database)(nil) // Forces compile time checking of the interface
+
+var _ AWSDynamoer = (*dynamodb.DynamoDB)(nil) // Forces compile time checking of the interface
+
+type DBer interface {
+	Put(string, int64) error
+	Get(string) (*models.Item, error)
+	Delete(string) error
+}
+
+type AWSDynamoer interface {
+	PutItem(*dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
+	Query(*dynamodb.QueryInput) (*dynamodb.QueryOutput, error)
+	DeleteItem(*dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
+}
+
+func (db *database) Put(name string, created int64) error {
+	i := map[string]dynamodb.AttributeValue{
+		"Name": dynamodb.AttributeValue{
+			S: aws.String(name),
+		},
+		"Created": dynamodb.AttributeValue{
+			N: aws.String(strconv.FormatInt(created, 10)),
+		},
 	}
 
-	t := new(T)
-	t.TableName = "Locks"
-	t.Item.Name.S = name
-	t.Item.Created.N = created
-	t.Expected.Name.Exists = false
+	e := map[string]dynamodb.ExpectedAttributeValue{
+		"Name": dynamodb.ExpectedAttributeValue{
+			Exists: aws.Boolean(false),
+		},
+	}
 
-	resp, err := db.do(opPutItem, t)
+	pit := &dynamodb.PutItemInput{
+		TableName: aws.String("Locks"),
+		Item:      i,
+		Expected:  e,
+	}
+	_, err := db.client.PutItem(pit)
 	if err != nil {
 		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("updateMinute error: %d %q", resp.StatusCode, string(b))
 	}
 
 	return nil
 }
 
-func (db *database) get(name string) (*item, error) {
-	type T struct {
-		TableName      string
-		ConsistentRead bool
-		Key            struct {
-			HashKeyElement s
-		}
-		AttributesToGet []string
+func (db *database) Get(name string) (*models.Item, error) {
+	kc := map[string]dynamodb.Condition{
+		"Name": dynamodb.Condition{
+			AttributeValueList: []dynamodb.AttributeValue{
+				dynamodb.AttributeValue{
+					S: aws.String(name),
+				},
+			},
+			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+		},
+	}
+	qi := &dynamodb.QueryInput{
+		TableName:       aws.String("Locks"),
+		ConsistentRead:  aws.Boolean(true),
+		Select:          aws.String(dynamodb.SelectSpecificAttributes),
+		AttributesToGet: []string{"Name", "Created"},
+		KeyConditions:   kc,
 	}
 
-	t := new(T)
-	t.TableName = "Locks"
-	t.ConsistentRead = true
-	t.Key.HashKeyElement.S = name
-	t.AttributesToGet = []string{"Name", "Created"}
-
-	resp, err := db.do(opGetItem, t)
+	qo, err := db.client.Query(qi)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
+	// Make sure that no or 1 item is returned from DynamoDB
+	if qo.Count != nil {
+		if *qo.Count == 0 {
+			return nil, errors.New(fmt.Sprintf("No item for Name, %s", name))
+		} else if *qo.Count > 1 {
+			return nil, errors.New(fmt.Sprintf("Expected only 1 item returned from Dynamo, got %d", *qo.Count))
 		}
-		return nil, fmt.Errorf("get error: %d %q", resp.StatusCode, string(b))
+	} else {
+		return nil, errors.New("Count not returned")
 	}
 
-	type R struct {
-		Item struct {
-			Name    s
-			Created n
-		}
-	}
-	r := new(R)
-	if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
-		return nil, err
+	if len(qo.Items) < 1 || qo.Items[0] == nil {
+		return nil, errors.New("No item returned, count is invalid.")
 	}
 
-	if r.Item.Name.S == "" {
-		return nil, nil
-	}
-	return &item{r.Item.Name.S, r.Item.Created.N}, nil
+	n := *qo.Items[0]["Name"].S
+	c, _ := strconv.ParseInt(*qo.Items[0]["Created"].N, 10, 0)
+	i := &models.Item{n, c}
+	return i, nil
 }
 
-func (db *database) delete(name string) error {
-	type T struct {
-		TableName string
-		Key       struct {
-			HashKeyElement s
-		}
+func (db *database) Delete(name string) error {
+	k := map[string]dynamodb.AttributeValue{
+		"Name": dynamodb.AttributeValue{
+			S: aws.String(name),
+		},
 	}
-
-	t := new(T)
-	t.TableName = "Locks"
-	t.Key.HashKeyElement.S = name
-
-	resp, err := db.do(opDeleteItem, t)
+	dii := &dynamodb.DeleteItemInput{
+		TableName: aws.String("Locks"),
+		Key:       k,
+	}
+	_, err := db.client.DeleteItem(dii)
 	if err != nil {
 		return err
 	}
 
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("delete error: %d %q", resp.StatusCode, string(b))
-	}
 	return nil
-}
-
-func (db *database) do(op string, v interface{}) (*http.Response, error) {
-	b := new(bytes.Buffer)
-	if err := json.NewEncoder(b).Encode(v); err != nil {
-		panic(err)
-	}
-
-	r, _ := http.NewRequest("POST", "https://dynamodb.us-east-1.amazonaws.com/", b)
-	r.Header.Set("Date", time.Now().UTC().Format(http.TimeFormat))
-	r.Header.Set("X-Amz-Target", op)
-	r.Header.Set("Content-Type", "application/x-amz-json-1.0")
-
-	err := db.s.Sign(db.keys, r)
-	if err != nil {
-		return nil, err
-	}
-
-	return http.DefaultClient.Do(r)
 }

@@ -1,10 +1,11 @@
 # ddbsync
 
+[![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/zshenker/ddbsync)
+[![Build Status](https://img.shields.io/travis/zshenker/ddbsync.svg)](https://travis-ci.org/zshenker/ddbsync)
+
 DynamoDB/sync
 
 This package is designed to emulate the behaviour of `pkg/sync` on top of Amazon's DynamoDB. If you need a distributed locking mechanism, consider using this package and DynamoDB before standing up paxos or Zookeeper.
-
-[GoPkgDoc](http://go.pkgdoc.org/github.com/ryandotsmith/ddbsync)
 
 ## Usage
 
@@ -22,13 +23,13 @@ package main
 
 import(
 		"time"
-		"github.com/ryandotsmith/ddbsync"
+		"github.com/zshenker/ddbsync"
 )
 
 func main() {
 		m := new(ddbsync.Mutex)
 		m.Name = "some-name"
-		m.Ttl = 10 * time.Second
+		m.TTL = int64(10 * time.Second)
 		m.Lock()
 		defer m.Unlock()
 		// do important work here
@@ -37,10 +38,11 @@ func main() {
 ```
 
 ```bash
-$ go get github.com/ryandotsmith/ddbsync
+$ go get github.com/zshenker/ddbsync
 $ go run main.go
 ```
 
 ## Related
 
+[ddbsync](https://github.com/ryandotsmith/ddbsync)
 [lock-smith](https://github.com/ryandotsmith/lock-smith)
