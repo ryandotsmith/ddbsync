@@ -17,6 +17,10 @@ var db DBer = &database{
 	client: dynamodb.New(nil),
 }
 
+var _ DBer = (*database)(nil) // Forces compile time checking of the interface
+
+var _ AWSDynamoer = (*dynamodb.DynamoDB)(nil) // Forces compile time checking of the interface
+
 type DBer interface {
 	Put(string, int64) error
 	Get(string) (*models.Item, error)
