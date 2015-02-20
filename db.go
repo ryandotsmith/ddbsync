@@ -6,8 +6,11 @@ import (
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
 	"github.com/zshenker/ddbsync/models"
+	"os"
 	"strconv"
 )
+
+const DEFAULT_LOCKS_TABLE_NAME string = "Locks"
 
 type database struct {
 	client AWSDynamoer
@@ -33,6 +36,15 @@ type AWSDynamoer interface {
 	DeleteItem(*dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
 }
 
+func locksTableName() string {
+	tableName := DEFAULT_LOCKS_TABLE_NAME
+	env := os.Getenv("DDBSYNC_LOCKS_TABLE_NAME")
+	if env != "" {
+		tableName = env
+	}
+	return tableName
+}
+
 func (db *database) Put(name string, created int64) error {
 	i := map[string]dynamodb.AttributeValue{
 		"Name": dynamodb.AttributeValue{
@@ -50,7 +62,7 @@ func (db *database) Put(name string, created int64) error {
 	}
 
 	pit := &dynamodb.PutItemInput{
-		TableName: aws.String("Locks"),
+		TableName: aws.String(locksTableName()),
 		Item:      i,
 		Expected:  e,
 	}
@@ -74,7 +86,7 @@ func (db *database) Get(name string) (*models.Item, error) {
 		},
 	}
 	qi := &dynamodb.QueryInput{
-		TableName:       aws.String("Locks"),
+		TableName:       aws.String(locksTableName()),
 		ConsistentRead:  aws.Boolean(true),
 		Select:          aws.String(dynamodb.SelectSpecificAttributes),
 		AttributesToGet: []string{"Name", "Created"},
@@ -114,7 +126,7 @@ func (db *database) Delete(name string) error {
 		},
 	}
 	dii := &dynamodb.DeleteItemInput{
-		TableName: aws.String("Locks"),
+		TableName: aws.String(locksTableName()),
 		Key:       k,
 	}
 	_, err := db.client.DeleteItem(dii)

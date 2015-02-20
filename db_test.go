@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/zshenker/ddbsync/mocks"
 	"github.com/zshenker/ddbsync/models"
+	"os"
 	"testing"
 )
 
@@ -33,6 +34,7 @@ func (s *DBSuite) SetupSuite() {
 func (s *DBSuite) SetupTest() {
 	s.mock = new(mocks.AWSDynamoer)
 	db.(*database).client = s.mock
+	os.Setenv("DDBSYNC_LOCKS_TABLE_NAME", "")
 }
 
 func (s *DBSuite) TearDownTest() {
@@ -158,4 +160,18 @@ func (s *DBSuite) TestDeleteError() {
 	err := db.Delete(DB_VALID_NAME)
 
 	assert.NotNil(s.T(), err)
+}
+
+func (s *DBSuite) TestLocksTableNameDefault() {
+	n := locksTableName()
+	assert.IsType(s.T(), "this is a string", n)
+	assert.Equal(s.T(), DEFAULT_LOCKS_TABLE_NAME, n)
+}
+
+func (s *DBSuite) TestLocksTableNameEnvVarSet() {
+	l := "CustomLocksTable"
+	os.Setenv("DDBSYNC_LOCKS_TABLE_NAME", l)
+	n := locksTableName()
+	assert.IsType(s.T(), "this is a string", n)
+	assert.Equal(s.T(), l, n)
 }
