@@ -1,6 +1,6 @@
 language: go
 go:
 - 1.4
-install: go get github.com/tools/godep && golang.org/x/tools/cmd/cover && go get github.com/mattn/goveralls
+install: go get github.com/tools/godep && go get golang.org/x/tools/cmd/cover && go get github.com/mattn/goveralls
 script: godep go test -v -cover -race -covermode=count -coverprofile=coverage.out && goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
 secure: "XYme3Cvl7jQERcncwU1zpGFN0tv0fS63uM3aMV0BJ0oT1vod8wQzDcJT+RrahCgZlE7THIvMQjcwMUtlUNQMIcO7jVJLi/s/hbCuMxjE3G19OSVAUFAUaXZ+mD3WZ6/lorbPSJzrUahah2g6NNd+9NP7sH1WB3NSlpkKV4EjKg0="
