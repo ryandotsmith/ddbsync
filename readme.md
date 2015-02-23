@@ -2,6 +2,7 @@
 
 [![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/zshenker/ddbsync)
 [![Build Status](https://img.shields.io/travis/zshenker/ddbsync.svg)](https://travis-ci.org/zshenker/ddbsync)
+[![Coverage Status](https://coveralls.io/repos/zshenker/ddbsync/badge.svg?branch=master)](https://coveralls.io/r/zshenker/ddbsync?branch=master)
 
 DynamoDB/sync
 
