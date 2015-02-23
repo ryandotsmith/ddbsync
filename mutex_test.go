@@ -1,13 +1,15 @@
 package ddbsync
 
 import (
+	"errors"
+	"testing"
+
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/zshenker/ddbsync/mocks"
 	"github.com/zshenker/ddbsync/models"
-	"testing"
 )
 
 const VALID_MUTEX_NAME string = "mut-test"
@@ -79,6 +81,17 @@ func (s *MutexSuite) TestPruneExpired() {
 
 	s.mock.On("Get", mock.AnythingOfType("string")).Return(&models.Item{Name: VALID_MUTEX_NAME, Created: VALID_MUTEX_CREATED}, nil)
 	s.mock.On("Delete", mock.AnythingOfType("string")).Return(nil)
+
+	underTest.PruneExpired()
+}
+
+func (s *MutexSuite) TestPruneExpiredError() {
+	underTest := Mutex{
+		Name: VALID_MUTEX_NAME,
+		TTL:  VALID_MUTEX_TTL,
+	}
+
+	s.mock.On("Get", mock.AnythingOfType("string")).Return((*models.Item)(nil), errors.New("Get Error"))
 
 	underTest.PruneExpired()
 }
