@@ -3,7 +3,6 @@ package ddbsync
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"strconv"
 
@@ -31,13 +30,9 @@ func disableSSL() bool {
 
 var db DBer = &database{
 	client: dynamodb.New(&dynamodb.DynamoDBConfig{&aws.Config{
-		Credentials: aws.DefaultCreds(),
-		Endpoint:    endpoint,
-		Region:      region,
-		DisableSSL:  disableSSL(),
-		ManualSend:  false,
-		HTTPClient:  http.DefaultClient,
-		LogLevel:    0,
+		Endpoint:   endpoint,
+		Region:     region,
+		DisableSSL: disableSSL(),
 	}}),
 }
 
