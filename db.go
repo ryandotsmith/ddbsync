@@ -3,11 +3,13 @@ package ddbsync
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"os"
+	"strconv"
+
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
 	"github.com/zshenker/ddbsync/models"
-	"os"
-	"strconv"
 )
 
 const DEFAULT_LOCKS_TABLE_NAME string = "Locks"
@@ -16,8 +18,27 @@ type database struct {
 	client AWSDynamoer
 }
 
+var region string = os.Getenv("DDBSYNC_DYNAMODB_REGION")
+var endpoint string = os.Getenv("DDBSYNC_DYNAMODB_ENDPOINT")
+
+func disableSSL() bool {
+	b, err := strconv.ParseBool(os.Getenv("DDBSYNC_DYNAMODB_DISABLE_SSL"))
+	if err != nil {
+		return false
+	}
+	return b
+}
+
 var db DBer = &database{
-	client: dynamodb.New(nil),
+	client: dynamodb.New(&dynamodb.DynamoDBConfig{&aws.Config{
+		Credentials: aws.DefaultCreds(),
+		Endpoint:    endpoint,
+		Region:      region,
+		DisableSSL:  disableSSL(),
+		ManualSend:  false,
+		HTTPClient:  http.DefaultClient,
+		LogLevel:    0,
+	}}),
 }
 
 var _ DBer = (*database)(nil) // Forces compile time checking of the interface
