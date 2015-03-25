@@ -62,25 +62,25 @@ func locksTableName() string {
 }
 
 func (db *database) Put(name string, created int64) error {
-	i := map[string]dynamodb.AttributeValue{
-		"Name": dynamodb.AttributeValue{
+	i := map[string]*dynamodb.AttributeValue{
+		"Name": &dynamodb.AttributeValue{
 			S: aws.String(name),
 		},
-		"Created": dynamodb.AttributeValue{
+		"Created": &dynamodb.AttributeValue{
 			N: aws.String(strconv.FormatInt(created, 10)),
 		},
 	}
 
-	e := map[string]dynamodb.ExpectedAttributeValue{
-		"Name": dynamodb.ExpectedAttributeValue{
+	e := map[string]*dynamodb.ExpectedAttributeValue{
+		"Name": &dynamodb.ExpectedAttributeValue{
 			Exists: aws.Boolean(false),
 		},
 	}
 
 	pit := &dynamodb.PutItemInput{
 		TableName: aws.String(locksTableName()),
-		Item:      i,
-		Expected:  e,
+		Item:      &i,
+		Expected:  &e,
 	}
 	_, err := db.client.PutItem(pit)
 	if err != nil {
@@ -91,22 +91,22 @@ func (db *database) Put(name string, created int64) error {
 }
 
 func (db *database) Get(name string) (*models.Item, error) {
-	kc := map[string]dynamodb.Condition{
-		"Name": dynamodb.Condition{
-			AttributeValueList: []dynamodb.AttributeValue{
-				dynamodb.AttributeValue{
+	kc := map[string]*dynamodb.Condition{
+		"Name": &dynamodb.Condition{
+			AttributeValueList: []*dynamodb.AttributeValue{
+				&dynamodb.AttributeValue{
 					S: aws.String(name),
 				},
 			},
-			ComparisonOperator: aws.String(dynamodb.ComparisonOperatorEq),
+			ComparisonOperator: aws.String("EQ"),
 		},
 	}
 	qi := &dynamodb.QueryInput{
 		TableName:       aws.String(locksTableName()),
 		ConsistentRead:  aws.Boolean(true),
-		Select:          aws.String(dynamodb.SelectSpecificAttributes),
-		AttributesToGet: []string{"Name", "Created"},
-		KeyConditions:   kc,
+		Select:          aws.String("SPECIFIC_ATTRIBUTES"),
+		AttributesToGet: []*string{aws.String("Name"), aws.String("Created")},
+		KeyConditions:   &kc,
 	}
 
 	qo, err := db.client.Query(qi)
@@ -129,21 +129,32 @@ func (db *database) Get(name string) (*models.Item, error) {
 		return nil, errors.New("No item returned, count is invalid.")
 	}
 
-	n := *qo.Items[0]["Name"].S
-	c, _ := strconv.ParseInt(*qo.Items[0]["Created"].N, 10, 0)
+	n := ""
+	c := int64(0)
+	for index, element := range *qo.Items[0] {
+		if index == "Name" {
+			n = *element.S
+		}
+		if index == "Created" {
+			c, _ = strconv.ParseInt(*element.N, 10, 0)
+		}
+	}
+	if n == "" || c == 0 {
+		return nil, errors.New("The Name and Created keys were not found in the Dynamo result")
+	}
 	i := &models.Item{n, c}
 	return i, nil
 }
 
 func (db *database) Delete(name string) error {
-	k := map[string]dynamodb.AttributeValue{
-		"Name": dynamodb.AttributeValue{
+	k := map[string]*dynamodb.AttributeValue{
+		"Name": &dynamodb.AttributeValue{
 			S: aws.String(name),
 		},
 	}
 	dii := &dynamodb.DeleteItemInput{
 		TableName: aws.String(locksTableName()),
-		Key:       k,
+		Key:       &k,
 	}
 	_, err := db.client.DeleteItem(dii)
 	if err != nil {
