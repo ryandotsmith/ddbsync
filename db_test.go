@@ -59,13 +59,13 @@ func (s *DBSuite) TestPutError() {
 
 func (s *DBSuite) TestGet() {
 	qo := &dynamodb.QueryOutput{
-		Count: aws.Integer(1),
-		Items: []map[string]dynamodb.AttributeValue{
-			map[string]dynamodb.AttributeValue{
-				"Name": dynamodb.AttributeValue{
+		Count: aws.Long(1),
+		Items: []*map[string]*dynamodb.AttributeValue{
+			&map[string]*dynamodb.AttributeValue{
+				"Name": &dynamodb.AttributeValue{
 					S: aws.String(DB_VALID_NAME),
 				},
-				"Created": dynamodb.AttributeValue{
+				"Created": &dynamodb.AttributeValue{
 					N: aws.String(DB_VALID_CREATED_STRING),
 				},
 			},
@@ -106,7 +106,7 @@ func (s *DBSuite) TestGetErrorNilCount() {
 
 func (s *DBSuite) TestGetErrorZeroCount() {
 	qo := &dynamodb.QueryOutput{
-		Count: aws.Integer(0),
+		Count: aws.Long(0),
 	}
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
@@ -120,7 +120,7 @@ func (s *DBSuite) TestGetErrorZeroCount() {
 
 func (s *DBSuite) TestGetErrorCountTooHigh() {
 	qo := &dynamodb.QueryOutput{
-		Count: aws.Integer(2),
+		Count: aws.Long(2),
 	}
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
@@ -134,7 +134,7 @@ func (s *DBSuite) TestGetErrorCountTooHigh() {
 
 func (s *DBSuite) TestGetErrorCountSetNoItems() {
 	qo := &dynamodb.QueryOutput{
-		Count: aws.Integer(1),
+		Count: aws.Long(1),
 	}
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
