@@ -51,12 +51,12 @@
 			"Rev": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
 		},
 		{
-			"ImportPath": "github.com/zshenker/ddbsync/mocks",
-			"Rev": "766c35981924a85f0088bb30117a7f1949c842d3"
+			"ImportPath": "github.com/skidder/ddbsync/mocks",
+			"Rev": "411628895b668f909d2b731270818cc7a85fa34f"
 		},
 		{
-			"ImportPath": "github.com/zshenker/ddbsync/models",
-			"Rev": "766c35981924a85f0088bb30117a7f1949c842d3"
+			"ImportPath": "github.com/skidder/ddbsync/models",
+			"Rev": "411628895b668f909d2b731270818cc7a85fa34f"
 		}
 	]
 }

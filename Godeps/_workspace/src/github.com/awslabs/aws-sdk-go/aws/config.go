@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"io"
 	"net/http"
 	"os"
 )
@@ -8,25 +9,29 @@ import (
 const DEFAULT_RETRIES = -1
 
 var DefaultConfig = &Config{
-	Credentials: DefaultCreds(),
-	Endpoint:    "",
-	Region:      os.Getenv("AWS_REGION"),
-	DisableSSL:  false,
-	ManualSend:  false,
-	HTTPClient:  http.DefaultClient,
-	LogLevel:    0,
-	MaxRetries:  DEFAULT_RETRIES,
+	Credentials:            DefaultCreds(),
+	Endpoint:               "",
+	Region:                 os.Getenv("AWS_REGION"),
+	DisableSSL:             false,
+	ManualSend:             false,
+	HTTPClient:             http.DefaultClient,
+	LogLevel:               0,
+	Logger:                 os.Stdout,
+	MaxRetries:             DEFAULT_RETRIES,
+	DisableParamValidation: false,
 }
 
 type Config struct {
-	Credentials CredentialsProvider
-	Endpoint    string
-	Region      string
-	DisableSSL  bool
-	ManualSend  bool
-	HTTPClient  *http.Client
-	LogLevel    uint
-	MaxRetries  int
+	Credentials            CredentialsProvider
+	Endpoint               string
+	Region                 string
+	DisableSSL             bool
+	ManualSend             bool
+	HTTPClient             *http.Client
+	LogLevel               uint
+	Logger                 io.Writer
+	MaxRetries             int
+	DisableParamValidation bool
 }
 
 func (c Config) Merge(newcfg *Config) *Config {
@@ -74,10 +79,22 @@ func (c Config) Merge(newcfg *Config) *Config {
 		cfg.LogLevel = c.LogLevel
 	}
 
+	if newcfg != nil && newcfg.Logger != nil {
+		cfg.Logger = newcfg.Logger
+	} else {
+		cfg.Logger = c.Logger
+	}
+
 	if newcfg != nil && newcfg.MaxRetries != DEFAULT_RETRIES {
 		cfg.MaxRetries = newcfg.MaxRetries
 	} else {
 		cfg.MaxRetries = c.MaxRetries
+	}
+
+	if newcfg != nil && newcfg.DisableParamValidation {
+		cfg.DisableParamValidation = newcfg.DisableParamValidation
+	} else {
+		cfg.DisableParamValidation = c.DisableParamValidation
 	}
 
 	return &cfg
