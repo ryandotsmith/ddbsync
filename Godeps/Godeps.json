@@ -7,27 +7,27 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/awslabs/aws-sdk-go/aws",
-			"Rev": "73dbf52745012571b2e750ff23877fd299242d57"
+			"Rev": "1bb6f74c625c5a54cac1a21886ea0ab32e8d02e1"
 		},
 		{
 			"ImportPath": "github.com/awslabs/aws-sdk-go/internal/endpoints",
-			"Rev": "73dbf52745012571b2e750ff23877fd299242d57"
+			"Rev": "1bb6f74c625c5a54cac1a21886ea0ab32e8d02e1"
 		},
 		{
 			"ImportPath": "github.com/awslabs/aws-sdk-go/internal/protocol/json/jsonutil",
-			"Rev": "73dbf52745012571b2e750ff23877fd299242d57"
+			"Rev": "1bb6f74c625c5a54cac1a21886ea0ab32e8d02e1"
 		},
 		{
 			"ImportPath": "github.com/awslabs/aws-sdk-go/internal/protocol/jsonrpc",
-			"Rev": "73dbf52745012571b2e750ff23877fd299242d57"
+			"Rev": "1bb6f74c625c5a54cac1a21886ea0ab32e8d02e1"
 		},
 		{
 			"ImportPath": "github.com/awslabs/aws-sdk-go/internal/signer/v4",
-			"Rev": "73dbf52745012571b2e750ff23877fd299242d57"
+			"Rev": "1bb6f74c625c5a54cac1a21886ea0ab32e8d02e1"
 		},
 		{
 			"ImportPath": "github.com/awslabs/aws-sdk-go/service/dynamodb",
-			"Rev": "73dbf52745012571b2e750ff23877fd299242d57"
+			"Rev": "1bb6f74c625c5a54cac1a21886ea0ab32e8d02e1"
 		},
 		{
 			"ImportPath": "github.com/stretchr/objx",
