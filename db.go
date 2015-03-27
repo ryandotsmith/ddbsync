@@ -29,11 +29,11 @@ func disableSSL() bool {
 }
 
 var db DBer = &database{
-	client: dynamodb.New(&dynamodb.DynamoDBConfig{&aws.Config{
+	client: dynamodb.New(&aws.Config{
 		Endpoint:   endpoint,
 		Region:     region,
 		DisableSSL: disableSSL(),
-	}}),
+	}),
 }
 
 var _ DBer = (*database)(nil) // Forces compile time checking of the interface
