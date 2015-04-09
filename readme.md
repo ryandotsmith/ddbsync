@@ -1,8 +1,8 @@
 # ddbsync
 
-[![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/zshenker/ddbsync)
-[![Build Status](https://img.shields.io/travis/zshenker/ddbsync.svg)](https://travis-ci.org/zshenker/ddbsync)
-[![Coverage Status](https://coveralls.io/repos/zshenker/ddbsync/badge.svg?branch=master)](https://coveralls.io/r/zshenker/ddbsync?branch=master)
+[![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/zencoder/ddbsync)
+[![Build Status](https://img.shields.io/travis/zencoder/ddbsync.svg)](https://travis-ci.org/zencoder/ddbsync)
+[![Coverage Status](https://coveralls.io/repos/zencoder/ddbsync/badge.svg?branch=master)](https://coveralls.io/r/zencoder/ddbsync?branch=master)
 
 DynamoDB/sync
 
@@ -24,7 +24,7 @@ package main
 
 import(
 		"time"
-		"github.com/zshenker/ddbsync"
+		"github.com/zencoder/ddbsync"
 )
 
 func main() {
@@ -39,7 +39,7 @@ func main() {
 ```
 
 ```bash
-$ go get github.com/zshenker/ddbsync
+$ go get github.com/zencoder/ddbsync
 $ go run main.go
 ```
 

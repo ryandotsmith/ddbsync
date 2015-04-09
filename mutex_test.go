@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/zshenker/ddbsync/mocks"
-	"github.com/zshenker/ddbsync/models"
+	"github.com/zencoder/ddbsync/mocks"
+	"github.com/zencoder/ddbsync/models"
 )
 
 const VALID_MUTEX_NAME string = "mut-test"

@@ -8,7 +8,7 @@ import (
 
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
-	"github.com/zshenker/ddbsync/models"
+	"github.com/zencoder/ddbsync/models"
 )
 
 const DEFAULT_LOCKS_TABLE_NAME string = "Locks"

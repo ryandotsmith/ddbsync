@@ -3,15 +3,16 @@ package ddbsync
 import (
 	"errors"
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/zshenker/ddbsync/mocks"
-	"github.com/zshenker/ddbsync/models"
-	"os"
-	"testing"
+	"github.com/zencoder/ddbsync/mocks"
+	"github.com/zencoder/ddbsync/models"
 )
 
 const DB_VALID_NAME string = "db-name"

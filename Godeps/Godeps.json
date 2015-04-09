@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/zshenker/ddbsync",
+	"ImportPath": "github.com/zencoder/ddbsync",
 	"GoVersion": "go1.4.1",
 	"Packages": [
 		"./..."
