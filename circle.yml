@@ -6,7 +6,7 @@ checkout:
   post:
     - rm -rf ~/.go_workspace/src/github.com/zencoder
     - mkdir -p ~/.go_workspace/src/github.com/zencoder
-    - cp -R ~/go-remote-config ~/.go_workspace/src/github.com/zencoder/ddbsync
+    - cp -R ~/ddbsync ~/.go_workspace/src/github.com/zencoder/ddbsync
 dependencies:
   cache_directories:
     - "~/.rvm/gems"
