@@ -1,0 +1,23 @@
+machine:
+  environment:
+    AWS_ACCESS_KEY_ID: a
+    AWS_SECRET_ACCESS_KEY: b
+checkout:
+  post:
+    - rm -rf ~/.go_workspace/src/github.com/zencoder
+    - mkdir -p ~/.go_workspace/src/github.com/zencoder
+    - cp -R ~/go-remote-config ~/.go_workspace/src/github.com/zencoder/ddbsync
+dependencies:
+  cache_directories:
+    - "~/.rvm/gems"
+  override:
+    - go get github.com/tools/godep
+    - go get golang.org/x/tools/cmd/cover
+    - go get github.com/mattn/goveralls
+    - go get github.com/modocache/gover
+test:
+  override:
+    - cd ~/.go_workspace/src/github.com/zencoder/ddbsync && make test
+  post:
+    - cd ~/.go_workspace/src/github.com/zencoder/ddbsync && make cover
+    - cd ~/.go_workspace/src/github.com/zencoder/ddbsync && make coveralls
