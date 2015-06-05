@@ -7,14 +7,14 @@ endif
 all: build test cover
 build:
 	if [ ! -d bin ]; then mkdir bin; fi
-	$(GO) build -v -o bin/go-remote-config
+	$(GO) build -v -o bin/ddbsync
 fmt:
 	$(GO) fmt ./...
 test:
 	if [ ! -d coverage ]; then mkdir coverage; fi
 	$(GO) test -v ./ -race -cover -coverprofile=$(COVERAGEDIR)/ddbsync.coverprofile
 cover:
-	$(GO) tool cover -html=$(COVERAGEDIR)/remoteconfig.coverprofile -o $(COVERAGEDIR)/ddbsync.html
+	$(GO) tool cover -html=$(COVERAGEDIR)/ddbsync.coverprofile -o $(COVERAGEDIR)/ddbsync.html
 tc: test cover
 coveralls:
 	gover $(COVERAGEDIR) $(COVERAGEDIR)/coveralls.coverprofile
