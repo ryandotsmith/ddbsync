@@ -1,4 +1,4 @@
-GO ?= go
+GO ?= godep go
 COVERAGEDIR = coverage
 ifdef CIRCLE_ARTIFACTS
   COVERAGEDIR = $(CIRCLE_ARTIFACTS)
