@@ -3,7 +3,6 @@ package ddbsync
 import (
 	"errors"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/awslabs/aws-sdk-go/aws"
@@ -15,13 +14,20 @@ import (
 	"github.com/zencoder/ddbsync/models"
 )
 
-const DB_VALID_NAME string = "db-name"
-const DB_VALID_CREATED int64 = 1424385592
-const DB_VALID_CREATED_STRING string = "1424385592"
+const (
+	DB_VALID_TABLE_NAME     string = "TestLockTable"
+	DB_VALID_REGION         string = "us-west-2"
+	DB_VALID_NO_ENDPOINT    string = ""
+	DB_VALID_DISABLE_SSL_NO bool   = false
+	DB_VALID_NAME           string = "db-name"
+	DB_VALID_CREATED        int64  = 1424385592
+	DB_VALID_CREATED_STRING string = "1424385592"
+)
 
 type DBSuite struct {
 	suite.Suite
 	mock *mocks.AWSDynamoer
+	db   DBer
 }
 
 func TestDBSuite(t *testing.T) {
@@ -34,18 +40,14 @@ func (s *DBSuite) SetupSuite() {
 
 func (s *DBSuite) SetupTest() {
 	s.mock = new(mocks.AWSDynamoer)
-	db.(*database).client = s.mock
-	os.Setenv("DDBSYNC_LOCKS_TABLE_NAME", "")
-}
-
-func (s *DBSuite) TearDownTest() {
-	db.(*database).client = dynamodb.New(nil)
+	s.db = NewDatabase(DB_VALID_TABLE_NAME, DB_VALID_REGION, DB_VALID_NO_ENDPOINT, DB_VALID_DISABLE_SSL_NO)
+	s.db.(*database).client = s.mock
 }
 
 func (s *DBSuite) TestPut() {
 	s.mock.On("PutItem", mock.AnythingOfType("*dynamodb.PutItemInput")).Return(&dynamodb.PutItemOutput{}, nil)
 
-	err := db.Put(DB_VALID_NAME, DB_VALID_CREATED)
+	err := s.db.Put(DB_VALID_NAME, DB_VALID_CREATED)
 
 	assert.Nil(s.T(), err)
 }
@@ -53,7 +55,7 @@ func (s *DBSuite) TestPut() {
 func (s *DBSuite) TestPutError() {
 	s.mock.On("PutItem", mock.AnythingOfType("*dynamodb.PutItemInput")).Return((*dynamodb.PutItemOutput)(nil), errors.New("PutItem Error"))
 
-	err := db.Put(DB_VALID_NAME, DB_VALID_CREATED)
+	err := s.db.Put(DB_VALID_NAME, DB_VALID_CREATED)
 
 	assert.NotNil(s.T(), err)
 }
@@ -75,7 +77,7 @@ func (s *DBSuite) TestGet() {
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
 
-	i, err := db.Get(DB_VALID_NAME)
+	i, err := s.db.Get(DB_VALID_NAME)
 
 	assert.NotNil(s.T(), i)
 	assert.Nil(s.T(), err)
@@ -85,7 +87,7 @@ func (s *DBSuite) TestGet() {
 func (s *DBSuite) TestGetErrorNoQueryOutput() {
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return((*dynamodb.QueryOutput)(nil), errors.New("Query Error"))
 
-	i, err := db.Get(DB_VALID_NAME)
+	i, err := s.db.Get(DB_VALID_NAME)
 
 	assert.Nil(s.T(), i)
 	assert.NotNil(s.T(), err)
@@ -98,7 +100,7 @@ func (s *DBSuite) TestGetErrorNilCount() {
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
 
-	i, err := db.Get(DB_VALID_NAME)
+	i, err := s.db.Get(DB_VALID_NAME)
 
 	assert.Nil(s.T(), i)
 	assert.NotNil(s.T(), err)
@@ -112,7 +114,7 @@ func (s *DBSuite) TestGetErrorZeroCount() {
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
 
-	i, err := db.Get(DB_VALID_NAME)
+	i, err := s.db.Get(DB_VALID_NAME)
 
 	assert.Nil(s.T(), i)
 	assert.NotNil(s.T(), err)
@@ -126,7 +128,7 @@ func (s *DBSuite) TestGetErrorCountTooHigh() {
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
 
-	i, err := db.Get(DB_VALID_NAME)
+	i, err := s.db.Get(DB_VALID_NAME)
 
 	assert.Nil(s.T(), i)
 	assert.NotNil(s.T(), err)
@@ -140,7 +142,7 @@ func (s *DBSuite) TestGetErrorCountSetNoItems() {
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
 
-	i, err := db.Get(DB_VALID_NAME)
+	i, err := s.db.Get(DB_VALID_NAME)
 
 	assert.Nil(s.T(), i)
 	assert.NotNil(s.T(), err)
@@ -150,7 +152,7 @@ func (s *DBSuite) TestGetErrorCountSetNoItems() {
 func (s *DBSuite) TestDelete() {
 	s.mock.On("DeleteItem", mock.AnythingOfType("*dynamodb.DeleteItemInput")).Return(&dynamodb.DeleteItemOutput{}, nil)
 
-	err := db.Delete(DB_VALID_NAME)
+	err := s.db.Delete(DB_VALID_NAME)
 
 	assert.Nil(s.T(), err)
 }
@@ -158,21 +160,7 @@ func (s *DBSuite) TestDelete() {
 func (s *DBSuite) TestDeleteError() {
 	s.mock.On("DeleteItem", mock.AnythingOfType("*dynamodb.DeleteItemInput")).Return((*dynamodb.DeleteItemOutput)(nil), errors.New("Delete Error"))
 
-	err := db.Delete(DB_VALID_NAME)
+	err := s.db.Delete(DB_VALID_NAME)
 
 	assert.NotNil(s.T(), err)
-}
-
-func (s *DBSuite) TestLocksTableNameDefault() {
-	n := locksTableName()
-	assert.IsType(s.T(), "this is a string", n)
-	assert.Equal(s.T(), DEFAULT_LOCKS_TABLE_NAME, n)
-}
-
-func (s *DBSuite) TestLocksTableNameEnvVarSet() {
-	l := "CustomLocksTable"
-	os.Setenv("DDBSYNC_LOCKS_TABLE_NAME", l)
-	n := locksTableName()
-	assert.IsType(s.T(), "this is a string", n)
-	assert.Equal(s.T(), l, n)
 }

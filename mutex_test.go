@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/awslabs/aws-sdk-go/service/dynamodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -31,29 +30,17 @@ func (s *MutexSuite) SetupSuite() {
 
 func (s *MutexSuite) SetupTest() {
 	s.mock = new(mocks.DBer)
-	db = s.mock
-}
-
-func (s *MutexSuite) TearDownSuite() {
-	db = &database{
-		client: dynamodb.New(nil),
-	}
 }
 
 func (s *MutexSuite) TestNew() {
-	underTest := Mutex{
-		Name: VALID_MUTEX_NAME,
-		TTL:  VALID_MUTEX_TTL,
-	}
+	underTest := NewMutex(VALID_MUTEX_NAME, VALID_MUTEX_TTL, s.mock)
+
 	assert.Equal(s.T(), VALID_MUTEX_NAME, underTest.Name)
 	assert.Equal(s.T(), VALID_MUTEX_TTL, underTest.TTL)
 }
 
 func (s *MutexSuite) TestLock() {
-	underTest := Mutex{
-		Name: VALID_MUTEX_NAME,
-		TTL:  VALID_MUTEX_TTL,
-	}
+	underTest := NewMutex(VALID_MUTEX_NAME, VALID_MUTEX_TTL, s.mock)
 
 	s.mock.On("Put", mock.AnythingOfType("string"), mock.AnythingOfType("int64")).Return(nil)
 	s.mock.On("Get", mock.AnythingOfType("string")).Return(&models.Item{Name: VALID_MUTEX_NAME, Created: VALID_MUTEX_CREATED}, nil)
@@ -63,10 +50,7 @@ func (s *MutexSuite) TestLock() {
 }
 
 func (s *MutexSuite) TestUnlock() {
-	underTest := Mutex{
-		Name: VALID_MUTEX_NAME,
-		TTL:  VALID_MUTEX_TTL,
-	}
+	underTest := NewMutex(VALID_MUTEX_NAME, VALID_MUTEX_TTL, s.mock)
 
 	s.mock.On("Delete", mock.AnythingOfType("string")).Return(nil)
 
@@ -74,10 +58,7 @@ func (s *MutexSuite) TestUnlock() {
 }
 
 func (s *MutexSuite) TestPruneExpired() {
-	underTest := Mutex{
-		Name: VALID_MUTEX_NAME,
-		TTL:  VALID_MUTEX_TTL,
-	}
+	underTest := NewMutex(VALID_MUTEX_NAME, VALID_MUTEX_TTL, s.mock)
 
 	s.mock.On("Get", mock.AnythingOfType("string")).Return(&models.Item{Name: VALID_MUTEX_NAME, Created: VALID_MUTEX_CREATED}, nil)
 	s.mock.On("Delete", mock.AnythingOfType("string")).Return(nil)
@@ -86,10 +67,7 @@ func (s *MutexSuite) TestPruneExpired() {
 }
 
 func (s *MutexSuite) TestPruneExpiredError() {
-	underTest := Mutex{
-		Name: VALID_MUTEX_NAME,
-		TTL:  VALID_MUTEX_TTL,
-	}
+	underTest := NewMutex(VALID_MUTEX_NAME, VALID_MUTEX_TTL, s.mock)
 
 	s.mock.On("Get", mock.AnythingOfType("string")).Return((*models.Item)(nil), errors.New("Get Error"))
 
