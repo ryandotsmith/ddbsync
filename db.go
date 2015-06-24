@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/awslabs/aws-sdk-go/aws"
-	"github.com/awslabs/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/zencoder/ddbsync/models"
 )
 
@@ -60,8 +60,8 @@ func (db *database) Put(name string, created int64) error {
 
 	pit := &dynamodb.PutItemInput{
 		TableName: aws.String(db.tableName),
-		Item:      &i,
-		Expected:  &e,
+		Item:      i,
+		Expected:  e,
 	}
 	_, err := db.client.PutItem(pit)
 	if err != nil {
@@ -87,7 +87,7 @@ func (db *database) Get(name string) (*models.Item, error) {
 		ConsistentRead:  aws.Boolean(true),
 		Select:          aws.String("SPECIFIC_ATTRIBUTES"),
 		AttributesToGet: []*string{aws.String("Name"), aws.String("Created")},
-		KeyConditions:   &kc,
+		KeyConditions:   kc,
 	}
 
 	qo, err := db.client.Query(qi)
@@ -112,7 +112,7 @@ func (db *database) Get(name string) (*models.Item, error) {
 
 	n := ""
 	c := int64(0)
-	for index, element := range *qo.Items[0] {
+	for index, element := range qo.Items[0] {
 		if index == "Name" {
 			n = *element.S
 		}
@@ -138,7 +138,7 @@ func (db *database) Delete(name string) error {
 	}
 	dii := &dynamodb.DeleteItemInput{
 		TableName: aws.String(db.tableName),
-		Key:       &k,
+		Key:       k,
 	}
 	_, err := db.client.DeleteItem(dii)
 	if err != nil {

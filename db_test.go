@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/awslabs/aws-sdk-go/aws"
-	"github.com/awslabs/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -63,8 +63,8 @@ func (s *DBSuite) TestPutError() {
 func (s *DBSuite) TestGet() {
 	qo := &dynamodb.QueryOutput{
 		Count: aws.Long(1),
-		Items: []*map[string]*dynamodb.AttributeValue{
-			&map[string]*dynamodb.AttributeValue{
+		Items: []map[string]*dynamodb.AttributeValue{
+			map[string]*dynamodb.AttributeValue{
 				"Name": &dynamodb.AttributeValue{
 					S: aws.String(DB_VALID_NAME),
 				},
