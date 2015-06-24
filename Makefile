@@ -23,3 +23,8 @@ clean:
 	$(GO) clean
 	rm -f bin/ddbsync
 	rm -rf coverage/
+gen-mocks:
+	mockery -name AWSDynamoer
+	mockery -name DBer
+godep-save:
+	godep save ./...
