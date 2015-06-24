@@ -3,37 +3,27 @@ package ddbsync
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/awslabs/aws-sdk-go/aws"
 	"github.com/awslabs/aws-sdk-go/service/dynamodb"
-	"github.com/zshenker/ddbsync/models"
+	"github.com/zencoder/ddbsync/models"
 )
 
-const DEFAULT_LOCKS_TABLE_NAME string = "Locks"
-
 type database struct {
-	client AWSDynamoer
+	client    AWSDynamoer
+	tableName string
 }
 
-var region string = os.Getenv("DDBSYNC_DYNAMODB_REGION")
-var endpoint string = os.Getenv("DDBSYNC_DYNAMODB_ENDPOINT")
-
-func disableSSL() bool {
-	b, err := strconv.ParseBool(os.Getenv("DDBSYNC_DYNAMODB_DISABLE_SSL"))
-	if err != nil {
-		return false
+func NewDatabase(tableName string, region string, endpoint string, disableSSL bool) DBer {
+	return &database{
+		client: dynamodb.New(&aws.Config{
+			Endpoint:   endpoint,
+			Region:     region,
+			DisableSSL: disableSSL,
+		}),
+		tableName: tableName,
 	}
-	return b
-}
-
-var db DBer = &database{
-	client: dynamodb.New(&aws.Config{
-		Endpoint:   endpoint,
-		Region:     region,
-		DisableSSL: disableSSL(),
-	}),
 }
 
 var _ DBer = (*database)(nil) // Forces compile time checking of the interface
@@ -50,15 +40,6 @@ type AWSDynamoer interface {
 	PutItem(*dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
 	Query(*dynamodb.QueryInput) (*dynamodb.QueryOutput, error)
 	DeleteItem(*dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
-}
-
-func locksTableName() string {
-	tableName := DEFAULT_LOCKS_TABLE_NAME
-	env := os.Getenv("DDBSYNC_LOCKS_TABLE_NAME")
-	if env != "" {
-		tableName = env
-	}
-	return tableName
 }
 
 func (db *database) Put(name string, created int64) error {
@@ -78,7 +59,7 @@ func (db *database) Put(name string, created int64) error {
 	}
 
 	pit := &dynamodb.PutItemInput{
-		TableName: aws.String(locksTableName()),
+		TableName: aws.String(db.tableName),
 		Item:      &i,
 		Expected:  &e,
 	}
@@ -102,7 +83,7 @@ func (db *database) Get(name string) (*models.Item, error) {
 		},
 	}
 	qi := &dynamodb.QueryInput{
-		TableName:       aws.String(locksTableName()),
+		TableName:       aws.String(db.tableName),
 		ConsistentRead:  aws.Boolean(true),
 		Select:          aws.String("SPECIFIC_ATTRIBUTES"),
 		AttributesToGet: []*string{aws.String("Name"), aws.String("Created")},
@@ -142,7 +123,10 @@ func (db *database) Get(name string) (*models.Item, error) {
 	if n == "" || c == 0 {
 		return nil, errors.New("The Name and Created keys were not found in the Dynamo result")
 	}
-	i := &models.Item{n, c}
+	i := &models.Item{
+		Name:    n,
+		Created: c,
+	}
 	return i, nil
 }
 
@@ -153,7 +137,7 @@ func (db *database) Delete(name string) error {
 		},
 	}
 	dii := &dynamodb.DeleteItemInput{
-		TableName: aws.String(locksTableName()),
+		TableName: aws.String(db.tableName),
 		Key:       &k,
 	}
 	_, err := db.client.DeleteItem(dii)

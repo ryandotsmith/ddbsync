@@ -18,9 +18,19 @@ import (
 type Mutex struct {
 	Name string
 	TTL  int64
+	db   DBer
 }
 
 var _ sync.Locker = (*Mutex)(nil) // Forces compile time checking of the interface
+
+// Mutex constructor
+func NewMutex(name string, ttl int64, db DBer) *Mutex {
+	return &Mutex{
+		Name: name,
+		TTL:  ttl,
+		db:   db,
+	}
+}
 
 // Lock will write an item in a DynamoDB table if the item does not exist.
 // Before writing the lock, we will clear any locks that are expired.
@@ -28,7 +38,7 @@ var _ sync.Locker = (*Mutex)(nil) // Forces compile time checking of the interfa
 func (m *Mutex) Lock() {
 	for {
 		m.PruneExpired()
-		err := db.Put(m.Name, time.Now().Unix())
+		err := m.db.Put(m.Name, time.Now().Unix())
 		if err == nil {
 			return
 		}
@@ -38,7 +48,7 @@ func (m *Mutex) Lock() {
 // Unlock will delete an item in a DynamoDB table.
 func (m *Mutex) Unlock() {
 	for {
-		err := db.Delete(m.Name)
+		err := m.db.Delete(m.Name)
 		if err == nil {
 			return
 		}
@@ -50,7 +60,7 @@ func (m *Mutex) Unlock() {
 // but never removed them after execution. This commonly happens when a
 // processor experiences network failure.
 func (m *Mutex) PruneExpired() {
-	item, err := db.Get(m.Name)
+	item, err := m.db.Get(m.Name)
 	if err != nil {
 		log.Printf("PruneExpired. error = %v", err)
 		return
