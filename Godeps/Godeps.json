@@ -7,38 +7,38 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/aws",
-			"Comment": "v0.6.3",
-			"Rev": "912c4af1b7e1dd2f8735668df44b2750c552c07b"
+			"Comment": "v0.6.4",
+			"Rev": "f4e37011d81e59702c156b071449ec16b37abcae"
 		},
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/internal/endpoints",
-			"Comment": "v0.6.3",
-			"Rev": "912c4af1b7e1dd2f8735668df44b2750c552c07b"
+			"Comment": "v0.6.4",
+			"Rev": "f4e37011d81e59702c156b071449ec16b37abcae"
 		},
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/internal/protocol/json/jsonutil",
-			"Comment": "v0.6.3",
-			"Rev": "912c4af1b7e1dd2f8735668df44b2750c552c07b"
+			"Comment": "v0.6.4",
+			"Rev": "f4e37011d81e59702c156b071449ec16b37abcae"
 		},
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/internal/protocol/jsonrpc",
-			"Comment": "v0.6.3",
-			"Rev": "912c4af1b7e1dd2f8735668df44b2750c552c07b"
+			"Comment": "v0.6.4",
+			"Rev": "f4e37011d81e59702c156b071449ec16b37abcae"
 		},
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/internal/protocol/rest",
-			"Comment": "v0.6.3",
-			"Rev": "912c4af1b7e1dd2f8735668df44b2750c552c07b"
+			"Comment": "v0.6.4",
+			"Rev": "f4e37011d81e59702c156b071449ec16b37abcae"
 		},
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/internal/signer/v4",
-			"Comment": "v0.6.3",
-			"Rev": "912c4af1b7e1dd2f8735668df44b2750c552c07b"
+			"Comment": "v0.6.4",
+			"Rev": "f4e37011d81e59702c156b071449ec16b37abcae"
 		},
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/service/dynamodb",
-			"Comment": "v0.6.3",
-			"Rev": "912c4af1b7e1dd2f8735668df44b2750c552c07b"
+			"Comment": "v0.6.4",
+			"Rev": "f4e37011d81e59702c156b071449ec16b37abcae"
 		},
 		{
 			"ImportPath": "github.com/stretchr/objx",
