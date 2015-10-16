@@ -8,7 +8,8 @@
 package ddbsync
 
 import (
-	"fmt"
+	"log"
+	"sync"
 	"time"
 )
 
@@ -16,7 +17,19 @@ import (
 // Mutexes can be created as part of other structures.
 type Mutex struct {
 	Name string
-	Ttl  int64
+	TTL  int64
+	db   DBer
+}
+
+var _ sync.Locker = (*Mutex)(nil) // Forces compile time checking of the interface
+
+// Mutex constructor
+func NewMutex(name string, ttl int64, db DBer) *Mutex {
+	return &Mutex{
+		Name: name,
+		TTL:  ttl,
+		db:   db,
+	}
 }
 
 // Lock will write an item in a DynamoDB table if the item does not exist.
@@ -25,7 +38,7 @@ type Mutex struct {
 func (m *Mutex) Lock() {
 	for {
 		m.PruneExpired()
-		err := db.put(m.Name, time.Now().Unix())
+		err := m.db.Put(m.Name, time.Now().Unix())
 		if err == nil {
 			return
 		}
@@ -35,7 +48,7 @@ func (m *Mutex) Lock() {
 // Unlock will delete an item in a DynamoDB table.
 func (m *Mutex) Unlock() {
 	for {
-		err := db.delete(m.Name)
+		err := m.db.Delete(m.Name)
 		if err == nil {
 			return
 		}
@@ -47,13 +60,13 @@ func (m *Mutex) Unlock() {
 // but never removed them after execution. This commonly happens when a
 // processor experiences network failure.
 func (m *Mutex) PruneExpired() {
-	item, err := db.get(m.Name)
+	item, err := m.db.Get(m.Name)
 	if err != nil {
-		fmt.Printf("error=%v", err)
+		log.Printf("PruneExpired. error = %v", err)
 		return
 	}
 	if item != nil {
-		if item.Created < (time.Now().Unix() - m.Ttl) {
+		if item.Created < (time.Now().Unix() - m.TTL) {
 			m.Unlock()
 		}
 	}
