@@ -18,9 +18,9 @@ type database struct {
 func NewDatabase(tableName string, region string, endpoint string, disableSSL bool) DBer {
 	return &database{
 		client: dynamodb.New(&aws.Config{
-			Endpoint:   endpoint,
-			Region:     region,
-			DisableSSL: disableSSL,
+			Endpoint:   &endpoint,
+			Region:     &region,
+			DisableSSL: &disableSSL,
 		}),
 		tableName: tableName,
 	}
@@ -52,9 +52,10 @@ func (db *database) Put(name string, created int64) error {
 		},
 	}
 
+	no := false
 	e := map[string]*dynamodb.ExpectedAttributeValue{
 		"Name": &dynamodb.ExpectedAttributeValue{
-			Exists: aws.Boolean(false),
+			Exists: &no,
 		},
 	}
 
@@ -82,9 +83,10 @@ func (db *database) Get(name string) (*models.Item, error) {
 			ComparisonOperator: aws.String("EQ"),
 		},
 	}
+	yes := true
 	qi := &dynamodb.QueryInput{
 		TableName:       aws.String(db.tableName),
-		ConsistentRead:  aws.Boolean(true),
+		ConsistentRead:  &yes,
 		Select:          aws.String("SPECIFIC_ATTRIBUTES"),
 		AttributesToGet: []*string{aws.String("Name"), aws.String("Created")},
 		KeyConditions:   kc,

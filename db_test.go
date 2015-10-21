@@ -61,8 +61,9 @@ func (s *DBSuite) TestPutError() {
 }
 
 func (s *DBSuite) TestGet() {
+	one := int64(1)
 	qo := &dynamodb.QueryOutput{
-		Count: aws.Long(1),
+		Count: &one,
 		Items: []map[string]*dynamodb.AttributeValue{
 			map[string]*dynamodb.AttributeValue{
 				"Name": &dynamodb.AttributeValue{
@@ -108,8 +109,9 @@ func (s *DBSuite) TestGetErrorNilCount() {
 }
 
 func (s *DBSuite) TestGetErrorZeroCount() {
+	zero := int64(0)
 	qo := &dynamodb.QueryOutput{
-		Count: aws.Long(0),
+		Count: &zero,
 	}
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
@@ -122,8 +124,9 @@ func (s *DBSuite) TestGetErrorZeroCount() {
 }
 
 func (s *DBSuite) TestGetErrorCountTooHigh() {
+	two := int64(2)
 	qo := &dynamodb.QueryOutput{
-		Count: aws.Long(2),
+		Count: &two,
 	}
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
@@ -136,8 +139,9 @@ func (s *DBSuite) TestGetErrorCountTooHigh() {
 }
 
 func (s *DBSuite) TestGetErrorCountSetNoItems() {
+	one := int64(1)
 	qo := &dynamodb.QueryOutput{
-		Count: aws.Long(1),
+		Count: &one,
 	}
 
 	s.mock.On("Query", mock.AnythingOfType("*dynamodb.QueryInput")).Return(qo, nil)
