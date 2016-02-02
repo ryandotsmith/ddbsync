@@ -1,30 +1,30 @@
-GO ?= godep go
+GO15VENDOREXPERIMENT := 1
 COVERAGEDIR = coverage
 ifdef CIRCLE_ARTIFACTS
   COVERAGEDIR = $(CIRCLE_ARTIFACTS)
 endif
 
 all: build test cover
+install-deps:
+	glide install
 build:
 	if [ ! -d bin ]; then mkdir bin; fi
-	$(GO) build -v -o bin/ddbsync
+	go build -v -o bin/ddbsync
 fmt:
-	$(GO) fmt ./...
+	go fmt ./...
 test:
 	if [ ! -d coverage ]; then mkdir coverage; fi
-	$(GO) test -v ./ -race -cover -coverprofile=$(COVERAGEDIR)/ddbsync.coverprofile
+	go test -v ./ -race -cover -coverprofile=$(COVERAGEDIR)/ddbsync.coverprofile
 cover:
-	$(GO) tool cover -html=$(COVERAGEDIR)/ddbsync.coverprofile -o $(COVERAGEDIR)/ddbsync.html
+	go tool cover -html=$(COVERAGEDIR)/ddbsync.coverprofile -o $(COVERAGEDIR)/ddbsync.html
 tc: test cover
 coveralls:
 	gover $(COVERAGEDIR) $(COVERAGEDIR)/coveralls.coverprofile
 	goveralls -coverprofile=$(COVERAGEDIR)/coveralls.coverprofile -service=circle-ci -repotoken=$(COVERALLS_TOKEN)
 clean:
-	$(GO) clean
+	go clean
 	rm -f bin/ddbsync
 	rm -rf coverage/
 gen-mocks:
 	mockery -name AWSDynamoer
 	mockery -name DBer
-godep-save:
-	godep save ./...

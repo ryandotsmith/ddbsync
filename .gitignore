@@ -1,2 +1,4 @@
 coverage.out
 coverage/*
+bin/*
+vendor/*

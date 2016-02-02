@@ -1,0 +1,23 @@
+package: github.com/zencoder/ddbsync
+import:
+- package: github.com/aws/aws-sdk-go
+  version: f28e73d4791500a90d49190e0a01b769748cc2a8
+  subpackages:
+  - aws
+  - internal/endpoints
+  - internal/protocol/json/jsonutil
+  - internal/protocol/jsonrpc
+  - internal/protocol/rest
+  - internal/signer/v4
+  - service/dynamodb
+- package: github.com/stretchr/objx
+  version: cbeaeb16a013161a98496fad62933b1d21786672
+- package: github.com/stretchr/testify
+  version: c478a808a1b37e10c82f71a2172728f8742bad51
+  subpackages:
+  - assert
+  - mock
+  - require
+  - suite
+- package: github.com/vaughan0/go-ini
+  version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
