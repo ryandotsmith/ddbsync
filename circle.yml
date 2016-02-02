@@ -2,6 +2,7 @@ machine:
   environment:
     AWS_ACCESS_KEY_ID: a
     AWS_SECRET_ACCESS_KEY: b
+    GO15VENDOREXPERIMENT: 1
 checkout:
   post:
     - rm -rf ~/.go_workspace/src/github.com/zencoder
