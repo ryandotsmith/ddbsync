@@ -1,0 +1,38 @@
+hash: 9e9bdb9bee610c21b38fb3ded497fa1bb6484d33aee60b1ab003ba0d74ec4b6a
+updated: 2016-02-02T09:37:22.53660873Z
+imports:
+- name: github.com/aws/aws-sdk-go
+  version: f28e73d4791500a90d49190e0a01b769748cc2a8
+  subpackages:
+  - aws
+  - internal/endpoints
+  - internal/protocol/json/jsonutil
+  - internal/protocol/jsonrpc
+  - internal/protocol/rest
+  - internal/signer/v4
+  - service/dynamodb
+- name: github.com/lsegal/gucumber
+  version: 44a4d7eb3b14a88cf82b073dfb7e06277afdc549
+- name: github.com/shiena/ansicolor
+  version: a422bbe96644373c5753384a59d678f7d261ff10
+- name: github.com/stretchr/objx
+  version: cbeaeb16a013161a98496fad62933b1d21786672
+- name: github.com/stretchr/testify
+  version: c478a808a1b37e10c82f71a2172728f8742bad51
+  subpackages:
+  - assert
+  - mock
+  - require
+  - suite
+- name: github.com/vaughan0/go-ini
+  version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  repo: https://golang.org/x/crypto
+- name: golang.org/x/net
+  version: 644ffc06205c045a7d696b9a212191615d30b77b
+- name: golang.org/x/text
+  version: db455d007ae424a0b91aff0fe2632d5271563925
+- name: golang.org/x/tools
+  version: b47dfd93e5c47f9311ab20047c690df78d460f75
+devImports: []

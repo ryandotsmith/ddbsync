@@ -8,6 +8,11 @@ DynamoDB/sync
 
 This package is designed to emulate the behaviour of `pkg/sync` on top of Amazon's DynamoDB. If you need a distributed locking mechanism, consider using this package and DynamoDB before standing up paxos or Zookeeper.
 
+
+## Dependency Management
+
+This project uses [Glide](https://github.com/Masterminds/glide) to manage it's dependencies, and does not commit the vendor directory. As a result this is not `go get` installable, please refer to the Glide docs for Glide install instructions, and make sure to `glide install` to create a `vendor` directory before attempting to build against this repo.
+
 ## Usage
 
 Create a DynamoDB table named *Locks*.
@@ -23,23 +28,25 @@ $ export AWS_SECRET_KEY=secret
 package main
 
 import(
-		"time"
-		"github.com/zencoder/ddbsync"
+	"time"
+	"github.com/zencoder/ddbsync"
 )
 
 func main() {
-		m := new(ddbsync.Mutex)
-		m.Name = "some-name"
-		m.TTL = int64(10 * time.Second)
-		m.Lock()
-		defer m.Unlock()
-		// do important work here
-		return
+	m := new(ddbsync.Mutex)
+	m.Name = "some-name"
+	m.TTL = int64(10 * time.Second)
+	m.Lock()
+	defer m.Unlock()
+	// do important work here
+	return
 }
 ```
 
 ```bash
-$ go get github.com/zencoder/ddbsync
+$ git clone http://github.com/zencoder/ddbsync && cd ddbsync
+$ export GO15VENDOREXPERIMENT=1
+$ glide install
 $ go run main.go
 ```
 
