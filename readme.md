@@ -28,7 +28,7 @@ import(
 func main() {
 		m := new(ddbsync.Mutex)
 		m.Name = "some-name"
-		m.Ttl = 10 * time.Second
+		m.Ttl = int64(10 * time.Second)
 		m.Lock()
 		defer m.Unlock()
 		// do important work here
