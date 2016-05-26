@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/zencoder/ddbsync/models"
 )
@@ -17,11 +18,11 @@ type database struct {
 
 func NewDatabase(tableName string, region string, endpoint string, disableSSL bool) DBer {
 	return &database{
-		client: dynamodb.New(&aws.Config{
+		client: dynamodb.New(session.New(&aws.Config{
 			Endpoint:   &endpoint,
 			Region:     &region,
 			DisableSSL: &disableSSL,
-		}),
+		})),
 		tableName: tableName,
 	}
 }

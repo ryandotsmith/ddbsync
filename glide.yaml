@@ -1,7 +1,7 @@
 package: github.com/zencoder/ddbsync
 import:
 - package: github.com/aws/aws-sdk-go
-  version: f28e73d4791500a90d49190e0a01b769748cc2a8
+  version: v0.10.4
   subpackages:
   - aws
   - internal/endpoints
