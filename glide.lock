@@ -1,0 +1,40 @@
+hash: c8eda54028fd67096ca88a85b938c46dab40d22388184d64f9a2a7636e4e9003
+updated: 2016-05-26T14:30:42.755422873+01:00
+imports:
+- name: github.com/aws/aws-sdk-go
+  version: c3505486c9bc67389575587c2154500864883384
+  subpackages:
+  - aws
+  - internal/endpoints
+  - internal/protocol/json/jsonutil
+  - internal/protocol/jsonrpc
+  - internal/protocol/rest
+  - internal/signer/v4
+  - service/dynamodb
+  - aws/awserr
+  - aws/credentials
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/request
+  - private/protocol/jsonrpc
+  - private/signer/v4
+  - private/waiter
+  - private/protocol/json/jsonutil
+  - private/protocol/rest
+- name: github.com/go-ini/ini
+  version: 12f418cc7edc5a618a51407b7ac1f1f512139df3
+- name: github.com/jmespath/go-jmespath
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
+- name: github.com/stretchr/objx
+  version: cbeaeb16a013161a98496fad62933b1d21786672
+- name: github.com/stretchr/testify
+  version: c478a808a1b37e10c82f71a2172728f8742bad51
+  subpackages:
+  - assert
+  - mock
+  - require
+  - suite
+- name: github.com/vaughan0/go-ini
+  version: a98ad7ee00ec53921f08832bc06ecf7fd600e6a1
+devImports: []
