@@ -28,3 +28,4 @@ clean:
 gen-mocks:
 	mockery -name AWSDynamoer
 	mockery -name DBer
+	mockery -name LockServicer
